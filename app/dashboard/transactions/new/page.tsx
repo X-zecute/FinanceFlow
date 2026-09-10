@@ -62,7 +62,7 @@ export default function NewTransactionPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-12 w-full">
+    <div className="max-w-xl mx-auto space-y-6 pb-12 w-full px-4 sm:px-6">
       <button 
         onClick={() => router.back()}
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
@@ -70,7 +70,7 @@ export default function NewTransactionPage() {
         <ArrowLeft className="h-4 w-4" /> Back to transactions
       </button>
 
-      <div className="rounded-3xl bg-white p-6 shadow-2xl sm:p-8 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+      <div className="rounded-3xl bg-white p-6 shadow-2xl sm:p-8 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden">
         <div className="mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">New Transaction</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Record and categorize your cash flow in Nigerian Naira (₦).</p>

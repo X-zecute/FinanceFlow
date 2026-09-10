@@ -358,9 +358,9 @@ export default function TransactionsPage() {
 
         {!isLoading && filteredTransactions.length > 0 && (
           <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4 bg-slate-50/50 text-xs font-bold text-slate-500">
-            <span>Showing <strong className="text-slate-900">{filteredTransactions.length}</strong> live database entries</span>
+            <span>Showing <strong className="text-slate-900">{filteredTransactions.length}</strong> Live Database Entries</span>
             <span className="text-emerald-600 flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Live Firestore Connection
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Live Connection
             </span>
           </div>
         )}
