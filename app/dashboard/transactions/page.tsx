@@ -94,6 +94,36 @@ export default function TransactionsPage() {
     }
   };
 
+  // Client-side CSV export function (prevents 404 errors)
+  const handleExportStatement = () => {
+    if (!transactions || transactions.length === 0) {
+      alert("No transaction records available to export.");
+      return;
+    }
+
+    const headers = ["ID", "Merchant / Source", "Category", "Type", "Amount (NGN)", "Date", "Account", "Status"];
+    const rows = transactions.map(tx => [
+      tx.id,
+      `"${tx.merchant.replace(/"/g, '""')}"`,
+      `"${tx.category.replace(/"/g, '""')}"`,
+      tx.type || "expense",
+      tx.amount.toFixed(2),
+      tx.date,
+      `"${(tx.account || "").replace(/"/g, '""')}"`,
+      "Completed"
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `financial_statement_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const filteredTransactions = useMemo(() => {
     let result = transactions.filter(tx => {
       const matchesSearch = 
@@ -135,7 +165,7 @@ export default function TransactionsPage() {
   ];
 
   return (
-    <div className="flex flex-col space-y-8 pb-12 w-full max-w-7xl mx-auto">
+    <div className="flex flex-col space-y-8 pb-12 w-full max-w-7xl mx-auto px-4 sm:px-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6">
         <div>
           <div className="flex items-center gap-3">
@@ -149,17 +179,17 @@ export default function TransactionsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button 
-            onClick={() => router.push("/dashboard/reports")}
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300"
+            onClick={handleExportStatement}
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
           >
             <Download className="h-4 w-4 text-slate-500" />
             <span>Export Statement</span>
           </button>
           <button 
             onClick={() => router.push("/dashboard/transactions/new")}
-            className="flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-500 active:scale-[0.98]"
+            className="flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-500 active:scale-[0.98] cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span>Add Record</span>
@@ -223,19 +253,19 @@ export default function TransactionsPage() {
             <div className="flex rounded-2xl bg-slate-100 p-1 border border-slate-200/60">
               <button
                 onClick={() => setSelectedType("all")}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${selectedType === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${selectedType === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
               >
                 All Flow
               </button>
               <button
                 onClick={() => setSelectedType("expense")}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${selectedType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${selectedType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
               >
                 Expenses
               </button>
               <button
                 onClick={() => setSelectedType("income")}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${selectedType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${selectedType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
               >
                 Income
               </button>
@@ -262,7 +292,7 @@ export default function TransactionsPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition-all ${
+              className={`rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
@@ -291,7 +321,7 @@ export default function TransactionsPage() {
             </p>
             <button
               onClick={() => { setSearchTerm(""); setSelectedCategory("All"); setSelectedType("all"); }}
-              className="mt-5 rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-all"
+              className="mt-5 rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               Reset Filters
             </button>
