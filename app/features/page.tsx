@@ -78,14 +78,11 @@ export default function FeaturesPage() {
           <div className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600">
             <Link href="/" className="hover:text-cyan-600 transition-colors">Home</Link>
             <Link href="/features" className="text-cyan-600 font-semibold">Features</Link>
-            <Link href="/#pricing" className="hover:text-cyan-600 transition-colors">Pricing</Link>
-            <Link href="/#faq" className="hover:text-cyan-600 transition-colors">FAQ</Link>
+            <Link href="/pricing" className="hover:text-cyan-600 transition-colors">Pricing</Link>
+            <Link href="/faq" className="hover:text-cyan-600 transition-colors">FAQ</Link>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-slate-900">
-              Log in
-            </Link>
             <Link href="/get-started" className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 active:scale-95">
               Get Started
             </Link>

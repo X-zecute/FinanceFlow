@@ -47,11 +47,9 @@ export default function AboutPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/get-started" className="text-sm font-bold text-slate-700 hover:text-cyan-600 transition-colors px-3 py-2">
-              Log in
-            </Link>
+            
             <Link href="/get-started" className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/10 active:scale-95">
-              Get Started Free
+              Get Started
             </Link>
           </div>
 
@@ -75,7 +73,7 @@ export default function AboutPage() {
             <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-bold text-slate-700 hover:text-cyan-600 py-1">Contact Us</Link>
             <hr className="my-2 border-slate-100" />
             <div className="flex flex-col gap-3 pt-1">
-              <Link href="/get-started" onClick={() => setIsMobileMenuOpen(false)} className="w-full rounded-2xl border border-slate-200 py-3 text-center text-base font-bold text-slate-700">Log in</Link>
+              
               <Link href="/get-started" onClick={() => setIsMobileMenuOpen(false)} className="w-full rounded-2xl bg-slate-900 py-3 text-center text-base font-bold text-white shadow-lg shadow-slate-900/20">Get Started Free</Link>
             </div>
           </div>

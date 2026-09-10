@@ -40,9 +40,10 @@ export default function LandingPage() {
       
       {/* --- Navigation Bar --- */}
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/90 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
           
-          <Link href="/" className="flex items-center gap-2 group">
+          {/* 1. Logo Section */}
+          <Link href="/" className="flex shrink-0 items-center gap-2 group mr-4 lg:mr-8">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
               <PiggyBank className="h-5 w-5" />
             </div>
@@ -51,7 +52,8 @@ export default function LandingPage() {
             </span>
           </Link>
           
-          <div className="hidden md:flex items-center gap-8 font-semibold text-sm text-slate-600">
+          {/* 2. Navigation Links (Changed md:flex to lg:flex) */}
+          <div className="hidden lg:flex items-center gap-4 lg:gap-8 font-semibold text-sm text-slate-600">
             <Link href="/features" className="hover:text-cyan-600 transition-colors">Features</Link>
             <Link href="/how-it-works" className="hover:text-cyan-600 transition-colors">How it Works</Link>
             <Link href="/about" className="hover:text-cyan-600 transition-colors">About Us</Link>
@@ -61,14 +63,16 @@ export default function LandingPage() {
             <Link href="/contact" className="hover:text-cyan-600 transition-colors">Contact Us</Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          {/* 3. Call to Action Button (Changed md:flex to lg:flex) */}
+          <div className="hidden lg:flex shrink-0 items-center gap-4 ml-4 lg:ml-8">
             <Link href="/get-started" className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/10 active:scale-95">
               Get Started Free
             </Link>
           </div>
 
+          {/* Hamburger Menu (Changed md:hidden to lg:hidden) */}
           <button 
-            className="p-2 text-slate-600 md:hidden rounded-xl hover:bg-slate-100"
+            className="p-2 text-slate-600 lg:hidden rounded-xl hover:bg-slate-100 ml-auto shrink-0"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -76,9 +80,9 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Mobile Nav Dropdown */}
+        {/* Mobile Nav Dropdown (Changed md:hidden to lg:hidden) */}
         {isMobileMenuOpen && (
-          <div className="absolute left-0 right-0 top-full flex flex-col gap-3 border-b border-slate-200 bg-white p-6 shadow-2xl md:hidden animate-in fade-in slide-in-from-top-2">
+          <div className="absolute left-0 right-0 top-full flex flex-col gap-3 border-b border-slate-200 bg-white p-6 shadow-2xl lg:hidden animate-in fade-in slide-in-from-top-2">
             <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-bold text-slate-700 hover:text-cyan-600 py-1">Features</Link>
             <Link href="/how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-bold text-slate-700 hover:text-cyan-600 py-1">How it Works</Link>
             <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-bold text-slate-700 hover:text-cyan-600 py-1">About Us</Link>

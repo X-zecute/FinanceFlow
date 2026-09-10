@@ -65,9 +65,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-slate-900">
-              Log in
-            </Link>
+            
             <Link href="/get-started" className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 active:scale-95">
               Get Started
             </Link>
@@ -87,10 +85,9 @@ export default function HowItWorksPage() {
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-slate-600">Home</Link>
             <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-slate-600">Features</Link>
             <Link href="/how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-semibold text-cyan-600">How it Works</Link>
-            <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-slate-600">Pricing</Link>
+            <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-base font-medium text-slate-600">Pricing</Link>
             <hr className="my-2 border-slate-100" />
             <div className="flex flex-col gap-4 pt-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center text-base font-semibold text-slate-600">Log in</Link>
               <Link href="/get-started" onClick={() => setIsMobileMenuOpen(false)} className="w-full rounded-full bg-slate-900 py-3 text-center text-base font-semibold text-white">Get Started</Link>
             </div>
           </div>
