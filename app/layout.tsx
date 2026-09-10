@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SidebarNav from "@/components/SidebarNav";
 import { Providers } from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body>
         <Providers>
           {children}
+          <Analytics />
         </Providers>
       </body>
     </html>

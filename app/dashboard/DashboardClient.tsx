@@ -19,7 +19,8 @@ import {
   Wallet,
   Loader2,
   Trash2,
-  X
+  X,
+  CheckCircle2
 } from "lucide-react";
 import { db } from "@/config/firebase";
 import { collection, onSnapshot, query, orderBy, where, addDoc, deleteDoc, doc } from "firebase/firestore";
@@ -53,6 +54,7 @@ export default function DashboardClient({ user }: { user: any }) {
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
   const [isSubmittingBill, setIsSubmittingBill] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   // Fetch Transactions & Bills in real-time
   useEffect(() => {
@@ -249,10 +251,48 @@ export default function DashboardClient({ user }: { user: any }) {
             )}
           </div>
           
-          <button className="relative p-2.5 bg-white border border-slate-200 rounded-full hover:bg-slate-50 shadow-sm shrink-0">
-            <Bell className="h-5 w-5 text-slate-600" />
-            <span className="absolute top-1 right-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
-          </button>
+          {/* Notification Bell Dropdown Container */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="relative p-2.5 bg-white border border-slate-200 rounded-full hover:bg-slate-50 shadow-sm shrink-0 cursor-pointer transition-all"
+            >
+              <Bell className="h-5 w-5 text-slate-600" />
+              <span className="absolute top-1 right-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
+            </button>
+
+            {isNotificationsOpen && (
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200 shadow-xl p-4 z-50 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <h4 className="font-bold text-slate-900 text-sm">Notifications</h4>
+                  <button 
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="text-xs text-slate-400 hover:text-slate-700 font-bold"
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="py-3 space-y-3">
+                  <div className="flex items-start gap-3 p-2 rounded-xl bg-slate-50">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">System Live on Vercel</p>
+                      <p className="text-[11px] text-slate-500">Your Firestore database and real-time listeners are active.</p>
+                    </div>
+                  </div>
+                  {bills.length > 0 && (
+                    <div className="flex items-start gap-3 p-2 rounded-xl bg-blue-50/50">
+                      <Zap className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">Upcoming Bill Reminder</p>
+                        <p className="text-[11px] text-slate-500">You have {bills.length} active bills tracked.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="shrink-0">
             <UserMenu email={user?.email || session?.user?.email} />
@@ -276,7 +316,7 @@ export default function DashboardClient({ user }: { user: any }) {
         </button>
         <button 
           onClick={handleExportStatement}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 shadow-sm transition-all"
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 shadow-sm transition-all cursor-pointer"
         >
           <FileText className="h-4 w-4 text-emerald-600" /> Export Statement
         </button>
