@@ -299,7 +299,7 @@ export default function DashboardClient({ user }: { user: any }) {
             </button>
 
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-3xl bg-white border border-slate-200 shadow-2xl p-5 z-50">
+              <div className="absolute  mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-3xl bg-white border border-slate-200 shadow-2xl p-5 z-50">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <h4 className="font-extrabold text-slate-900 text-sm">Notifications</h4>
