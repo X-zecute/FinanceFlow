@@ -96,6 +96,7 @@ export default function BudgetsPage() {
       where("userEmail", "==", session.user.email),
       orderBy("createdAt", "desc")
     );
+
     const unsubBudgets = onSnapshot(budgetsQuery, (snapshot) => {
       const fetchedBudgets = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
@@ -119,6 +120,7 @@ export default function BudgetsPage() {
       collection(db, "expenses"),
       where("userEmail", "==", session.user.email)
     );
+
     const unsubExpenses = onSnapshot(expensesQuery, (snapshot) => {
       const fetchedExpenses = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
@@ -143,7 +145,6 @@ export default function BudgetsPage() {
     };
   }, [session, status]);
 
-  // Delete Budget Function
   const handleDeleteBudget = async (id: string, category: string) => {
     if (window.confirm(`Are you sure you want to delete the budget for "${category}"?`)) {
       try {
@@ -155,7 +156,6 @@ export default function BudgetsPage() {
     }
   };
 
-  // Compute spent amount dynamically based on user input records for the current month/year
   const budgets = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -215,7 +215,7 @@ export default function BudgetsPage() {
 
         <button 
           onClick={() => router.push("/dashboard/budgets/new")}
-          className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-500 active:scale-[0.98] w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-500 active:scale-[0.98] w-full sm:w-auto cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>Create New Budget</span>
@@ -233,7 +233,7 @@ export default function BudgetsPage() {
           </p>
           <button 
             onClick={() => router.push("/dashboard/budgets/new")}
-            className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create First Budget
           </button>
@@ -345,7 +345,7 @@ export default function BudgetsPage() {
                       </div>
                       <button 
                         onClick={() => handleDeleteBudget(b.id, b.category)}
-                        className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors focus:outline-none"
+                        className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                         title="Delete Budget"
                       >
                         <Trash2 className="h-4 w-4" />

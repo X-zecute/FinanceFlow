@@ -1,18 +1,19 @@
 // app/(dashboard)/dashboard/transactions/new/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ArrowLeft, Tag, Calendar, Building, Loader2, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
 import { db } from "@/config/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, onSnapshot } from "firebase/firestore";
 
 export default function NewTransactionPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [transactionType, setTransactionType] = useState<"expense" | "income">("expense");
+  const [userAccounts, setUserAccounts] = useState<string[]>([]);
 
   const defaultCategories = [
     "Groceries & Food", "Fuel & Transport", "Airtime & Data", "Electricity & Utilities", 
@@ -20,14 +21,29 @@ export default function NewTransactionPage() {
     "Education", "Salary / Income", "Business / Freelance", "Investments"
   ];
 
-  const defaultAccounts = [
-    "GTBank Savings (...8821)",
-    "Zenith Current (...4390)",
-    "Kuda Bank (...1120)",
-    "OPay Wallet",
-    "Moniepoint",
-    "Cash Wallet"
-  ];
+  // Fetch user's custom accounts dynamically
+  useEffect(() => {
+    if (!session?.user?.email) return;
+
+    const q = query(
+      collection(db, "accounts"),
+      where("userEmail", "==", session.user.email)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetched = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return `${data.name} (${data.bank})`;
+      });
+      setUserAccounts(fetched.length > 0 ? fetched : [
+        "GTBank Savings (...8821)",
+        "Kuda Bank (...1120)",
+        "Cash Wallet"
+      ]);
+    });
+
+    return () => unsubscribe();
+  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,25 +81,24 @@ export default function NewTransactionPage() {
     <div className="max-w-xl mx-auto space-y-6 pb-12 w-full px-4 sm:px-6">
       <button 
         onClick={() => router.back()}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4" /> Back to transactions
       </button>
 
-      <div className="rounded-3xl bg-white p-6 shadow-2xl sm:p-8 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">New Transaction</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Record and categorize your cash flow in Nigerian Naira (₦).</p>
+      <div className="rounded-3xl bg-white p-6 shadow-2xl sm:p-8 border border-slate-100 overflow-hidden">
+        <div className="mb-6 pb-4 border-b border-slate-100">
+          <h1 className="text-xl font-bold text-slate-900">New Transaction</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Record and categorize your cash flow in Nigerian Naira (₦).</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          
-          <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
+          <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200/60">
             <button
               type="button"
               onClick={() => setTransactionType("expense")}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                transactionType === "expense" ? "bg-white dark:bg-slate-900 text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                transactionType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
               }`}
             >
               <ArrowDownRight className="h-4 w-4" /> Expense
@@ -91,8 +106,8 @@ export default function NewTransactionPage() {
             <button
               type="button"
               onClick={() => setTransactionType("income")}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                transactionType === "income" ? "bg-white dark:bg-slate-900 text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                transactionType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
               }`}
             >
               <ArrowUpRight className="h-4 w-4" /> Income
@@ -100,7 +115,7 @@ export default function NewTransactionPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Amount (₦)</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Amount (₦)</label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₦</span>
               <input
@@ -110,13 +125,13 @@ export default function NewTransactionPage() {
                 placeholder="0.00"
                 required
                 autoFocus
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold text-slate-900 focus:border-cyan-500 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Merchant / Title</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Merchant / Title</label>
             <div className="relative">
               <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
@@ -124,14 +139,14 @@ export default function NewTransactionPage() {
                 type="text"
                 placeholder="e.g. Shoprite, Eko Electricity, Chicken Republic"
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Category</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
               <div className="relative">
                 <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
@@ -139,7 +154,7 @@ export default function NewTransactionPage() {
                   list="category-options"
                   placeholder="Select or type..."
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none"
                 />
                 <datalist id="category-options">
                   {defaultCategories.map((cat) => (
@@ -150,18 +165,18 @@ export default function NewTransactionPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Account</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Account Source</label>
               <div className="relative">
                 <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   name="account"
                   list="account-options"
-                  placeholder="Select or type..."
+                  placeholder="Select your linked account..."
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none"
                 />
                 <datalist id="account-options">
-                  {defaultAccounts.map((acc) => (
+                  {userAccounts.map((acc) => (
                     <option key={acc} value={acc} />
                   ))}
                 </datalist>
@@ -170,7 +185,7 @@ export default function NewTransactionPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Date</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Date</label>
             <div className="relative">
               <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
@@ -178,28 +193,27 @@ export default function NewTransactionPage() {
                 type="date"
                 defaultValue={new Date().toISOString().split("T")[0]}
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => router.back()}
-              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-95 disabled:opacity-70"
+              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-95 disabled:opacity-70 cursor-pointer"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Transaction"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

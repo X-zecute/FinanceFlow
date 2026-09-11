@@ -11,7 +11,6 @@ import {
   PiggyBank,
   Wallet,
   TrendingUp,
-  TrendingDown,
   RefreshCcw,
   Loader2,
   Building,
@@ -64,10 +63,10 @@ export default function AccountsPage() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetched = snapshot.docs.map(doc => {
-        const data = doc.data();
+      const fetched = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
         return {
-          id: doc.id,
+          id: docSnap.id,
           name: data.name || "Unknown Account",
           bank: data.bank || "Unknown Bank",
           type: data.type || "Checking",
@@ -86,17 +85,14 @@ export default function AccountsPage() {
     return () => unsubscribe();
   }, [session, status]);
 
-  // Sync All Accounts Function
   const handleSyncAll = async () => {
     setIsSyncing(true);
-    // Simulate real-time API sync connection with financial institutions
     setTimeout(() => {
       setIsSyncing(false);
       alert("All connected accounts have been successfully synchronized with live financial feeds!");
     }, 1500);
   };
 
-  // Delete Account Function
   const handleDeleteAccount = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to disconnect/delete "${name}"?`)) {
       try {
@@ -145,14 +141,14 @@ export default function AccountsPage() {
           <button 
             onClick={handleSyncAll}
             disabled={isSyncing}
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:opacity-70"
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:opacity-70 cursor-pointer"
           >
             <RefreshCcw className={`h-4 w-4 text-slate-500 ${isSyncing ? "animate-spin text-cyan-600" : ""}`} />
             <span>{isSyncing ? "Syncing..." : "Sync All"}</span>
           </button>
           <button 
             onClick={() => router.push("/dashboard/accounts/new")}
-            className="flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:bg-cyan-500 active:scale-[0.98]"
+            className="flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/20 transition-all hover:bg-cyan-500 active:scale-[0.98] cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span>Add Account</span>
@@ -160,9 +156,7 @@ export default function AccountsPage() {
         </div>
       </header>
 
-      {/* --- Restructured 3-Card Metrics Grid --- */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Total Net Worth Card */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Net Worth</p>
@@ -176,7 +170,6 @@ export default function AccountsPage() {
           </div>
         </div>
 
-        {/* Total Assets Card */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Assets</p>
@@ -190,7 +183,6 @@ export default function AccountsPage() {
           </div>
         </div>
 
-        {/* Total Liabilities Card */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Liabilities (Credit)</p>
@@ -219,7 +211,7 @@ export default function AccountsPage() {
             </p>
             <button 
               onClick={() => router.push("/dashboard/accounts/new")}
-              className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800"
+              className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 cursor-pointer"
             >
               <Plus className="h-4 w-4" /> Connect First Account
             </button>
@@ -247,7 +239,7 @@ export default function AccountsPage() {
                     </div>
                     <button 
                       onClick={() => handleDeleteAccount(account.id, account.name)}
-                      className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                      className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Delete Account"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -282,7 +274,7 @@ export default function AccountsPage() {
 
             <button 
               onClick={() => router.push("/dashboard/accounts/new")}
-              className="flex min-h-[190px] flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-slate-500 transition-all hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-600"
+              className="flex min-h-[190px] flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-slate-500 transition-all hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-600 cursor-pointer"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
                 <Plus className="h-6 w-6" />

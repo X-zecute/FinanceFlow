@@ -18,7 +18,8 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   Clock,
-  Trash2
+  Trash2,
+  Landmark
 } from "lucide-react";
 import { db } from "@/config/firebase";
 import { collection, onSnapshot, query, orderBy, where, deleteDoc, doc } from "firebase/firestore";
@@ -38,10 +39,13 @@ export default function TransactionsPage() {
   const { data: session, status } = useSession();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [userAccounts, setUserAccounts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedType, setSelectedType] = useState<"all" | "expense" | "income">("all");
+  const [selectedAccount, setSelectedAccount] = useState("All Accounts");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
 
   useEffect(() => {
@@ -49,17 +53,19 @@ export default function TransactionsPage() {
 
     if (!session?.user?.email) {
       setTransactions([]);
+      setUserAccounts([]);
       setIsLoading(false);
       return;
     }
 
-    const q = query(
+    // Query Transactions
+    const qTx = query(
       collection(db, "expenses"), 
       where("userEmail", "==", session.user.email),
       orderBy("date", "desc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubTx = onSnapshot(qTx, (snapshot) => {
       const fetched: Transaction[] = snapshot.docs.map((docSnap): Transaction => {
         const data = docSnap.data();
         return {
@@ -69,7 +75,7 @@ export default function TransactionsPage() {
           amount: data.amount || 0,
           date: data.date || new Date().toISOString().split("T")[0],
           type: data.type === "income" ? "income" : "expense",
-          account: data.account || "GTBank Savings (...8821)"
+          account: data.account || "Default Account"
         };
       });
       setTransactions(fetched);
@@ -79,22 +85,34 @@ export default function TransactionsPage() {
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    // Query Custom User Accounts for the filter
+    const qAcc = query(
+      collection(db, "accounts"),
+      where("userEmail", "==", session.user.email)
+    );
+
+    const unsubAcc = onSnapshot(qAcc, (snapshot) => {
+      const accNames = snapshot.docs.map(doc => doc.data().name);
+      setUserAccounts(accNames);
+    });
+
+    return () => {
+      unsubTx();
+      unsubAcc();
+    };
   }, [session, status]);
 
-  // Robust delete function targeting the "expenses" collection
   const handleDelete = async (id: string, merchant: string) => {
     if (window.confirm(`Are you sure you want to delete the transaction from "${merchant}"?`)) {
       try {
         await deleteDoc(doc(db, "expenses", id));
       } catch (error) {
-        console.error("Error deleting transaction from Firestore: ", error);
-        alert("Failed to delete transaction. Please check your Firestore security rules.");
+        console.error("Error deleting transaction: ", error);
+        alert("Failed to delete transaction.");
       }
     }
   };
 
-  // Client-side CSV export function (prevents 404 errors)
   const handleExportStatement = () => {
     if (!transactions || transactions.length === 0) {
       alert("No transaction records available to export.");
@@ -132,8 +150,9 @@ export default function TransactionsPage() {
       
       const matchesCategory = selectedCategory === "All" || tx.category === selectedCategory;
       const matchesType = selectedType === "all" || tx.type === selectedType;
+      const matchesAccount = selectedAccount === "All Accounts" || tx.account?.includes(selectedAccount);
 
-      return matchesSearch && matchesCategory && matchesType;
+      return matchesSearch && matchesCategory && matchesType && matchesAccount;
     });
 
     return result.sort((a, b) => {
@@ -143,7 +162,7 @@ export default function TransactionsPage() {
       if (sortBy === "lowest") return a.amount - b.amount;
       return 0;
     });
-  }, [transactions, searchTerm, selectedCategory, selectedType, sortBy]);
+  }, [transactions, searchTerm, selectedCategory, selectedType, selectedAccount, sortBy]);
 
   const metrics = useMemo(() => {
     const totalVolume = filteredTransactions.reduce((acc, curr) => {
@@ -182,7 +201,7 @@ export default function TransactionsPage() {
         <div className="flex items-center gap-3 flex-wrap">
           <button 
             onClick={handleExportStatement}
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 cursor-pointer"
           >
             <Download className="h-4 w-4 text-slate-500" />
             <span>Export Statement</span>
@@ -245,7 +264,7 @@ export default function TransactionsPage() {
               placeholder="Search merchant or category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
@@ -269,6 +288,21 @@ export default function TransactionsPage() {
               >
                 Income
               </button>
+            </div>
+
+            {/* Account Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedAccount}
+                onChange={(e) => setSelectedAccount(e.target.value)}
+                className="appearance-none rounded-2xl border border-slate-200 bg-white py-3 pl-4 pr-10 text-xs font-bold text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none cursor-pointer"
+              >
+                <option value="All Accounts">All Accounts</option>
+                {userAccounts.map((acc) => (
+                  <option key={acc} value={acc}>{acc}</option>
+                ))}
+              </select>
+              <Landmark className="absolute right-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
 
             <div className="relative">
@@ -320,7 +354,7 @@ export default function TransactionsPage() {
               No entries match your account or filter criteria. Try clearing your search parameters or add a new record.
             </p>
             <button
-              onClick={() => { setSearchTerm(""); setSelectedCategory("All"); setSelectedType("all"); }}
+              onClick={() => { setSearchTerm(""); setSelectedCategory("All"); setSelectedType("all"); setSelectedAccount("All Accounts"); }}
               className="mt-5 rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-all cursor-pointer"
             >
               Reset Filters

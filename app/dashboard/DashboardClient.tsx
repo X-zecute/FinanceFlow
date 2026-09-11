@@ -91,7 +91,7 @@ export default function DashboardClient({ user }: { user: any }) {
           amount: data.amount || 0,
           date: data.date || new Date().toISOString().split("T")[0],
           type: data.type === "income" ? ("income" as const) : ("expense" as const),
-          account: data.account || "GTBank Savings",
+          account: data.account || "Default Account",
           status: "Completed"
         };
       });
@@ -282,13 +282,14 @@ export default function DashboardClient({ user }: { user: any }) {
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
             )}
           </div>
           
+          {/* Responsive Notification Dropdown */}
           <div className="relative">
             <button 
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -299,41 +300,52 @@ export default function DashboardClient({ user }: { user: any }) {
             </button>
 
             {isNotificationsOpen && (
-              <div className="absolute right-[-60px] sm:right-0 mt-2 w-72 sm:w-96 rounded-3xl bg-white border border-slate-200 shadow-2xl p-5 z-50">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-extrabold text-slate-900 text-sm">Notifications</h4>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black">
-                      {realtimeNotifications.length} Live
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setIsNotificationsOpen(false)}
-                    className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                
-                <div className="py-3 space-y-2.5 max-h-80 overflow-y-auto pr-1">
-                  {realtimeNotifications.map((notif) => (
-                    <div key={notif.id} className="flex items-start gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-                      <div className={`mt-0.5 p-2 rounded-xl shrink-0 ${notif.type === 'bill' ? 'bg-amber-100 text-amber-600' : notif.type === 'transaction' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
-                        {notif.type === 'bill' ? <Zap className="h-4 w-4" /> : notif.type === 'transaction' ? <Wallet className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-black text-slate-900 truncate">{notif.title}</p>
-                          <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap ml-2">{notif.time}</span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-0.5 break-words">{notif.message}</p>
-                      </div>
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-slate-950/20 sm:hidden" 
+                  onClick={() => setIsNotificationsOpen(false)} 
+                />
+
+                <div className="fixed sm:absolute right-3 sm:right-0 left-3 sm:left-auto top-20 sm:top-auto sm:mt-2 w-auto sm:w-96 max-w-sm sm:max-w-none rounded-3xl bg-white border border-slate-200 shadow-2xl p-5 z-50">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-extrabold text-slate-900 text-sm">Notifications</h4>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black">
+                        {realtimeNotifications.length} Live
+                      </span>
                     </div>
-                  ))}
+                    <button 
+                      onClick={() => setIsNotificationsOpen(false)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="py-3 space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                    {realtimeNotifications.map((notif) => (
+                      <div key={notif.id} className="flex items-start gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                        <div className={`mt-0.5 p-2 rounded-xl shrink-0 ${notif.type === 'bill' ? 'bg-amber-100 text-amber-600' : notif.type === 'transaction' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                          {notif.type === 'bill' ? <Zap className="h-4 w-4" /> : notif.type === 'transaction' ? <Wallet className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-black text-slate-900 truncate">{notif.title}</p>
+                            <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap ml-2">{notif.time}</span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5 break-words">{notif.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 text-center">
+                    <p className="text-[11px] font-bold text-slate-400">Synced in real-time with Firebase Firestore</p>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
-          </div>
+          </div> 
 
           <div className="shrink-0">
             <UserMenu email={user?.email || session?.user?.email} />
@@ -341,7 +353,6 @@ export default function DashboardClient({ user }: { user: any }) {
         </div>
       </header>
 
-      {/* --- Action Bar --- */}
       <div className="flex flex-wrap items-center gap-3">
         <button 
           onClick={() => router.push("/dashboard/transactions/new")}
@@ -363,7 +374,6 @@ export default function DashboardClient({ user }: { user: any }) {
         </button>
       </div>
 
-      {/* --- Metric Cards --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-6 w-full">
         <div className="flex flex-col justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between mb-2">
@@ -396,7 +406,6 @@ export default function DashboardClient({ user }: { user: any }) {
         </div>
       </div>
 
-      {/* --- Main Dashboard Content Grid --- */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8 w-full">
         <div className="xl:col-span-2 space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
@@ -554,7 +563,7 @@ export default function DashboardClient({ user }: { user: any }) {
                   type="text" 
                   placeholder="e.g. DSTV Subscription, Ikeja Electric" 
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
 
@@ -566,7 +575,7 @@ export default function DashboardClient({ user }: { user: any }) {
                   step="0.01" 
                   placeholder="0.00" 
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
 
@@ -577,7 +586,7 @@ export default function DashboardClient({ user }: { user: any }) {
                   type="date" 
                   defaultValue={new Date().toISOString().split("T")[0]} 
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
 
