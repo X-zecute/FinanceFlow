@@ -20,7 +20,11 @@ import {
   Loader2,
   Trash2,
   X,
-  CheckCircle2
+  CheckCircle2,
+  Building,
+  Tag,
+  CreditCard,
+  Calendar
 } from "lucide-react";
 import { db } from "@/config/firebase";
 import { collection, onSnapshot, query, orderBy, where, addDoc, deleteDoc, doc } from "firebase/firestore";
@@ -59,11 +63,44 @@ export default function DashboardClient({ user }: { user: any }) {
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [userAccounts, setUserAccounts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // --- Modals State ---
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
   const [isSubmittingBill, setIsSubmittingBill] = useState(false);
+
+  const [isAddTxOpen, setIsAddTxOpen] = useState(false);
+  const [isSubmittingTx, setIsSubmittingTx] = useState(false);
+  const [transactionType, setTransactionType] = useState<"expense" | "income">("expense");
+
+  // --- Modal UX: Scroll Lock & Escape Key Handler ---
+  useEffect(() => {
+    if (!isAddBillOpen && !isAddTxOpen) return;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsAddBillOpen(false);
+        setIsAddTxOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAddBillOpen, isAddTxOpen]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  const defaultCategories = [
+    "Groceries & Food", "Fuel & Transport", "Airtime & Data", "Electricity & Utilities", 
+    "Housing & Rent", "Owambe & Parties", "Entertainment", "Healthcare", 
+    "Education", "Salary / Income", "Business / Freelance", "Investments"
+  ];
 
   useEffect(() => {
     if (status === "loading") return;
@@ -71,6 +108,7 @@ export default function DashboardClient({ user }: { user: any }) {
     if (!session?.user?.email) {
       setTransactions([]);
       setBills([]);
+      setUserAccounts([]);
       setIsLoading(false);
       return;
     }
@@ -122,9 +160,15 @@ export default function DashboardClient({ user }: { user: any }) {
       setIsLoading(false);
     });
 
+    const qAcc = query(collection(db, "accounts"), where("userEmail", "==", session.user.email));
+    const unsubAcc = onSnapshot(qAcc, (snapshot) => {
+      setUserAccounts(snapshot.docs.map(doc => `${doc.data().name} (${doc.data().bank})`));
+    });
+
     return () => {
       unsubTx();
       unsubBills();
+      unsubAcc();
     };
   }, [session, status]);
 
@@ -152,6 +196,30 @@ export default function DashboardClient({ user }: { user: any }) {
       console.error("Error adding bill:", error);
       setIsSubmittingBill(false);
       alert("Failed to add bill.");
+    }
+  };
+
+  const handleAddTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmittingTx(true);
+
+    const formData = new FormData(e.currentTarget);
+    try {
+      await addDoc(collection(db, "expenses"), {
+        amount: parseFloat(formData.get("amount") as string),
+        merchant: formData.get("merchant"),
+        category: formData.get("category"),
+        date: formData.get("date"),
+        account: formData.get("account"),
+        type: transactionType,
+        userEmail: session?.user?.email || "unknown",
+        createdAt: new Date().toISOString(),
+      });
+      setIsSubmittingTx(false);
+      setIsAddTxOpen(false);
+    } catch (error) {
+      console.error("Error writing transaction:", error);
+      setIsSubmittingTx(false);
     }
   };
 
@@ -289,7 +357,6 @@ export default function DashboardClient({ user }: { user: any }) {
             )}
           </div>
           
-          {/* Responsive Notification Dropdown */}
           <div className="relative">
             <button 
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -355,7 +422,7 @@ export default function DashboardClient({ user }: { user: any }) {
 
       <div className="flex flex-wrap items-center gap-3">
         <button 
-          onClick={() => router.push("/dashboard/transactions/new")}
+          onClick={() => setIsAddTxOpen(true)}
           className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 shadow-sm transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" /> Add Record
@@ -542,6 +609,115 @@ export default function DashboardClient({ user }: { user: any }) {
         </div>
       </div>
 
+      {/* ========================================== */}
+      {/* ADD TRANSACTION MODAL ON DASHBOARD */}
+      {/* ========================================== */}
+      {isAddTxOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">New Transaction</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Record and categorize your cash flow.</p>
+              </div>
+              <button 
+                onClick={() => setIsAddTxOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddTransaction} className="space-y-5">
+              <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200/60">
+                <button
+                  type="button"
+                  onClick={() => setTransactionType("expense")}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                    transactionType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <ArrowDownRight className="h-4 w-4" /> Expense
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTransactionType("income")}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                    transactionType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <ArrowUpRight className="h-4 w-4" /> Income
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Amount (₦)</label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₦</span>
+                  <input name="amount" type="number" step="0.01" required autoFocus className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold focus:border-blue-500 focus:outline-none" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Merchant / Title</label>
+                <div className="relative">
+                  <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input name="merchant" type="text" required placeholder="e.g. Shoprite, Netflix" className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
+                  <div className="relative">
+                    <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <input name="category" list="category-options-dash" required placeholder="Select..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                    <datalist id="category-options-dash">
+                      {defaultCategories.map((cat, idx) => (
+                        <option key={`dash-cat-${idx}`} value={cat} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Account Source</label>
+                  <div className="relative">
+                    <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <input name="account" list="account-options-dash" required placeholder="Select account..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                    <datalist id="account-options-dash">
+                      {userAccounts.map((acc, index) => (
+                        <option key={`dash-acc-${index}`} value={acc} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input name="date" type="date" defaultValue={new Date().toISOString().split("T")[0]} required className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddTxOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSubmittingTx} className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-blue-500 transition-all disabled:opacity-70 cursor-pointer">
+                  {isSubmittingTx ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Transaction"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================== */}
+      {/* ADD BILL MODAL ON DASHBOARD */}
+      {/* ========================================== */}
       {isAddBillOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">

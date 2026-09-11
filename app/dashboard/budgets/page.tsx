@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   Plus,
@@ -21,10 +20,14 @@ import {
   CircleHelp,
   Loader2,
   Wallet,
-  Trash2
+  Trash2,
+  X,
+  Tag,
+  Shapes,
+  Palette
 } from "lucide-react";
 import { db } from "@/config/firebase";
-import { collection, onSnapshot, query, orderBy, where, deleteDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, where, deleteDoc, doc, addDoc } from "firebase/firestore";
 
 interface BudgetCategory {
   id: string;
@@ -71,7 +74,6 @@ const getThemeColors = (color: string) => {
 };
 
 export default function BudgetsPage() {
-  const router = useRouter();
   const { data: session, status } = useSession();
   
   const [rawBudgets, setRawBudgets] = useState<BudgetCategory[]>([]);
@@ -79,6 +81,37 @@ export default function BudgetsPage() {
   
   const [loadingBudgets, setLoadingBudgets] = useState(true);
   const [loadingExpenses, setLoadingExpenses] = useState(true);
+
+  // --- Modal State ---
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // --- Modal UX: Scroll Lock & Escape Key Handler ---
+  useEffect(() => {
+    if (!isAddModalOpen) return;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsAddModalOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAddModalOpen]);
+
+  const nigerianBudgetCategories = [
+    "Groceries & Food",
+    "Fuel & Transport",
+    "Airtime & Data",
+    "Electricity & Utilities",
+    "Housing & Rent",
+    "Owambe & Parties",
+    "Healthcare",
+    "Education"
+  ];
 
   useEffect(() => {
     if (status === "loading") return;
@@ -96,7 +129,6 @@ export default function BudgetsPage() {
       where("userEmail", "==", session.user.email),
       orderBy("createdAt", "desc")
     );
-
     const unsubBudgets = onSnapshot(budgetsQuery, (snapshot) => {
       const fetchedBudgets = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
@@ -120,7 +152,6 @@ export default function BudgetsPage() {
       collection(db, "expenses"),
       where("userEmail", "==", session.user.email)
     );
-
     const unsubExpenses = onSnapshot(expensesQuery, (snapshot) => {
       const fetchedExpenses = snapshot.docs.map((docSnap) => {
         const data = docSnap.data();
@@ -156,6 +187,36 @@ export default function BudgetsPage() {
     }
   };
 
+  const handleCreateBudget = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const category = formData.get("category");
+    const limit = formData.get("limit");
+    const iconName = formData.get("iconName");
+    const color = formData.get("color");
+
+    try {
+      await addDoc(collection(db, "budgets"), {
+        category,
+        limit: parseFloat(limit as string),
+        spent: 0,
+        iconName,
+        color,
+        userEmail: session?.user?.email || "unknown",
+        createdAt: new Date().toISOString(),
+      });
+
+      setIsSubmitting(false);
+      setIsAddModalOpen(false);
+    } catch (error) {
+      console.error("Error creating budget in Firebase: ", error);
+      setIsSubmitting(false);
+      alert("Failed to create budget.");
+    }
+  };
+
   const budgets = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -163,7 +224,10 @@ export default function BudgetsPage() {
 
     return rawBudgets.map((budget) => {
       const categoryExpenses = expenses.filter((ex) => {
-        const txDate = new Date(ex.date);
+        // Safe local date parsing avoiding UTC offset discrepancies
+        const [year, month, day] = ex.date.split("-").map(Number);
+        const txDate = new Date(year, month - 1, day);
+        
         const matchesDate = txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
         return ex.category === budget.category && ex.type !== "income" && matchesDate;
       });
@@ -202,7 +266,7 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="flex flex-col space-y-8 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="flex flex-col space-y-8 pb-8 w-full max-w-7xl mx-auto px-4 sm:px-6 relative">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-950">
@@ -214,7 +278,7 @@ export default function BudgetsPage() {
         </div>
 
         <button 
-          onClick={() => router.push("/dashboard/budgets/new")}
+          onClick={() => setIsAddModalOpen(true)}
           className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-500 active:scale-[0.98] w-full sm:w-auto cursor-pointer"
         >
           <Plus className="h-4 w-4" />
@@ -232,7 +296,7 @@ export default function BudgetsPage() {
             You haven't set up any budgets yet. Create your first budget to start tracking your category limits!
           </p>
           <button 
-            onClick={() => router.push("/dashboard/budgets/new")}
+            onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 cursor-pointer"
           >
             <Plus className="h-4 w-4" /> Create First Budget
@@ -406,6 +470,126 @@ export default function BudgetsPage() {
             })}
           </div>
         </>
+      )}
+
+      {/* ========================================== */}
+      {/* CREATE BUDGET MODAL OVERLAY */}
+      {/* ========================================== */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Create New Budget</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Set a monthly spending limit in Naira (₦) for a specific category.</p>
+              </div>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBudget} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category Name</label>
+                <div className="relative">
+                  <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input
+                    name="category"
+                    list="budget-categories"
+                    type="text"
+                    placeholder="e.g. Groceries & Food, Airtime & Data, Transport"
+                    required
+                    autoFocus
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 focus:border-cyan-500 focus:outline-none"
+                  />
+                  <datalist id="budget-categories">
+                    {nigerianBudgetCategories.map((cat, index) => (
+                      <option key={`budget-cat-${index}`} value={cat} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Monthly Limit (₦)</label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₦</span>
+                  <input
+                    name="limit"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold text-slate-900 focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Display Icon</label>
+                  <div className="relative">
+                    <Shapes className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <select
+                      name="iconName"
+                      required
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="Home">Home (Housing)</option>
+                      <option value="ShoppingBag">Shopping Bag (Groceries)</option>
+                      <option value="Car">Car (Transportation)</option>
+                      <option value="Utensils">Utensils (Dining Out)</option>
+                      <option value="Film">Film (Entertainment)</option>
+                      <option value="Zap">Lightning (Utilities)</option>
+                      <option value="HeartPulse">Heart (Health/Medical)</option>
+                      <option value="GraduationCap">Graduation (Education)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Theme Color</label>
+                  <div className="relative">
+                    <Palette className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <select
+                      name="color"
+                      required
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm text-slate-900 focus:border-cyan-500 focus:outline-none appearance-none cursor-pointer"
+                    >
+                      <option value="bg-blue-500">Blue</option>
+                      <option value="bg-emerald-500">Emerald Green</option>
+                      <option value="bg-rose-500">Rose Red</option>
+                      <option value="bg-amber-500">Amber Orange</option>
+                      <option value="bg-purple-500">Purple</option>
+                      <option value="bg-sky-500">Sky Blue</option>
+                      <option value="bg-indigo-500">Indigo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-95 disabled:opacity-70 cursor-pointer"
+                >
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Budget"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
