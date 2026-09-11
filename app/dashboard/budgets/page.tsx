@@ -309,7 +309,7 @@ export default function BudgetsPage() {
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Monthly Budget Summary</p>
-                  <div className="mt-2 flex items-baseline gap-2">
+                  <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span className="text-3xl lg:text-4xl font-black text-slate-900">
                       ₦{totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>

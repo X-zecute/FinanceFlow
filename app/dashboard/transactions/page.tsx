@@ -383,8 +383,8 @@ export default function TransactionsPage() {
                   <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
                   <div className="relative">
                     <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input name="category" list="category-options" required placeholder="Select..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                    <datalist id="category-options">
+                    <input name="category" list="category-options-page" required placeholder="Select..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                    <datalist id="category-options-page">
                       {defaultCategories.map((cat, idx) => (
                         <option key={`tx-cat-${idx}`} value={cat} />
                       ))}
@@ -396,8 +396,8 @@ export default function TransactionsPage() {
                   <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Account Source</label>
                   <div className="relative">
                     <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input name="account" list="account-options-list" required placeholder="Select account..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                    <datalist id="account-options-list">
+                    <input name="account" list="account-options-page-list" required placeholder="Select account..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                    <datalist id="account-options-page-list">
                       {userAccounts.map((acc, index) => (
                         <option key={`tx-acc-${index}`} value={acc} />
                       ))}

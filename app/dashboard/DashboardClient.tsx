@@ -546,246 +546,246 @@ export default function DashboardClient({ user }: { user: any }) {
                           </td>
                         </tr>
                       );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-900">Spending by Category</h3>
-              <MoreHorizontal className="h-5 w-5 text-slate-400 cursor-pointer" />
+                  })}
+                </tbody>
+              </table>
             </div>
-            <SpendingChart data={categorySpending} />
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-900">Upcoming Bills</h3>
-              <button 
-                onClick={() => setIsAddBillOpen(true)}
-                className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" /> Add Bill
-              </button>
-            </div>
-
-            {bills.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">
-                No upcoming bills added yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {bills.map((bill) => (
-                  <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/20 transition-colors group">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
-                        <Zap className="h-5 w-5 text-amber-500" />
-                      </div>
-                      <div className="truncate">
-                        <p className="text-sm font-bold text-slate-900 truncate">{bill.name}</p>
-                        <p className="text-xs font-medium text-slate-500">Due {bill.date}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-900">₦{bill.amount.toLocaleString()}</span>
-                      <button 
-                        onClick={() => handleDeleteBill(bill.id, bill.name)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Bill"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      {/* ========================================== */}
-      {/* ADD TRANSACTION MODAL ON DASHBOARD */}
-      {/* ========================================== */}
-      {isAddTxOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">New Transaction</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Record and categorize your cash flow.</p>
-              </div>
-              <button 
-                onClick={() => setIsAddTxOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
+      <div className="space-y-6">
+        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-slate-900">Spending by Category</h3>
+            <MoreHorizontal className="h-5 w-5 text-slate-400 cursor-pointer" />
+          </div>
+          <SpendingChart data={categorySpending} />
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-slate-900">Upcoming Bills</h3>
+            <button 
+              onClick={() => setIsAddBillOpen(true)}
+              className="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" /> Add Bill
+            </button>
+          </div>
+
+          {bills.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No upcoming bills added yet.
             </div>
-
-            <form onSubmit={handleAddTransaction} className="space-y-5">
-              <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200/60">
-                <button
-                  type="button"
-                  onClick={() => setTransactionType("expense")}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                    transactionType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
-                  }`}
-                >
-                  <ArrowDownRight className="h-4 w-4" /> Expense
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTransactionType("income")}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                    transactionType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
-                  }`}
-                >
-                  <ArrowUpRight className="h-4 w-4" /> Income
-                </button>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Amount (₦)</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₦</span>
-                  <input name="amount" type="number" step="0.01" required autoFocus className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold focus:border-blue-500 focus:outline-none" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Merchant / Title</label>
-                <div className="relative">
-                  <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input name="merchant" type="text" required placeholder="e.g. Shoprite, Netflix" className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
-                  <div className="relative">
-                    <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input name="category" list="category-options-dash" required placeholder="Select..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                    <datalist id="category-options-dash">
-                      {defaultCategories.map((cat, idx) => (
-                        <option key={`dash-cat-${idx}`} value={cat} />
-                      ))}
-                    </datalist>
+          ) : (
+            <div className="space-y-3">
+              {bills.map((bill) => (
+                <div key={bill.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/20 transition-colors group">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                      <Zap className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="truncate">
+                      <p className="text-sm font-bold text-slate-900 truncate">{bill.name}</p>
+                      <p className="text-xs font-medium text-slate-500">Due {bill.date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-900">₦{bill.amount.toLocaleString()}</span>
+                    <button 
+                      onClick={() => handleDeleteBill(bill.id, bill.name)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      title="Delete Bill"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Account Source</label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input name="account" list="account-options-dash" required placeholder="Select account..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                    <datalist id="account-options-dash">
-                      {userAccounts.map((acc, index) => (
-                        <option key={`dash-acc-${index}`} value={acc} />
-                      ))}
-                    </datalist>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Date</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                  <input name="date" type="date" defaultValue={new Date().toISOString().split("T")[0]} required className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddTxOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSubmittingTx} className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-blue-500 transition-all disabled:opacity-70 cursor-pointer">
-                  {isSubmittingTx ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Transaction"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================== */}
-      {/* ADD BILL MODAL ON DASHBOARD */}
-      {/* ========================================== */}
-      {isAddBillOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-black text-slate-900">Add Upcoming Bill</h3>
-              <button 
-                onClick={() => setIsAddBillOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              ))}
             </div>
-
-            <form onSubmit={handleAddBill} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Bill Name / Service</label>
-                <input 
-                  name="name" 
-                  type="text" 
-                  placeholder="e.g. DSTV Subscription, Ikeja Electric" 
-                  required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Amount (₦)</label>
-                <input 
-                  name="amount" 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="0.00" 
-                  required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Due Date</label>
-                <input 
-                  name="date" 
-                  type="date" 
-                  defaultValue={new Date().toISOString().split("T")[0]} 
-                  required
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button 
-                  type="button" 
-                  onClick={() => setIsAddBillOpen(false)}
-                  className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmittingBill}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-all disabled:opacity-70 cursor-pointer"
-                >
-                  {isSubmittingBill ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Bill"}
-                </button>
-              </div>
-            </form>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
-  );
+
+    {/* ========================================== */}
+    {/* ADD TRANSACTION MODAL ON DASHBOARD */}
+    {/* ========================================== */}
+    {isAddTxOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-200 my-8 animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">New Transaction</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Record and categorize your cash flow.</p>
+            </div>
+            <button 
+              onClick={() => setIsAddTxOpen(false)}
+              className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleAddTransaction} className="space-y-5">
+            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200/60">
+              <button
+                type="button"
+                onClick={() => setTransactionType("expense")}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                  transactionType === "expense" ? "bg-white text-rose-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <ArrowDownRight className="h-4 w-4" /> Expense
+              </button>
+              <button
+                type="button"
+                onClick={() => setTransactionType("income")}
+                className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                  transactionType === "income" ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <ArrowUpRight className="h-4 w-4" /> Income
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Amount (₦)</label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₦</span>
+                <input name="amount" type="number" step="0.01" required autoFocus className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-11 pr-4 text-xl font-bold focus:border-blue-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Merchant / Title</label>
+              <div className="relative">
+                <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input name="merchant" type="text" required placeholder="e.g. Shoprite, Netflix" className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Category</label>
+                <div className="relative">
+                  <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input name="category" list="category-options-dash-unique" required placeholder="Select..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                  <datalist id="category-options-dash-unique">
+                    {defaultCategories.map((cat, idx) => (
+                      <option key={`dash-cat-${idx}`} value={cat} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Account Source</label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input name="account" list="account-options-dash-list" required placeholder="Select account..." className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+                  <datalist id="account-options-dash-list">
+                    {userAccounts.map((acc, index) => (
+                      <option key={`dash-acc-${index}`} value={acc} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Date</label>
+              <div className="relative">
+                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input name="date" type="date" defaultValue={new Date().toISOString().split("T")[0]} required className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-11 pr-4 text-sm focus:border-blue-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button type="button" onClick={() => setIsAddTxOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" disabled={isSubmittingTx} className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-blue-500 transition-all disabled:opacity-70 cursor-pointer">
+                {isSubmittingTx ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Transaction"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+
+    {/* ========================================== */}
+    {/* ADD BILL MODAL ON DASHBOARD */}
+    {/* ========================================== */}
+    {isAddBillOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-black text-slate-900">Add Upcoming Bill</h3>
+            <button 
+              onClick={() => setIsAddBillOpen(false)}
+              className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleAddBill} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Bill Name / Service</label>
+              <input 
+                name="name" 
+                type="text" 
+                placeholder="e.g. DSTV Subscription, Ikeja Electric" 
+                required
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Amount (₦)</label>
+              <input 
+                name="amount" 
+                type="number" 
+                step="0.01" 
+                placeholder="0.00" 
+                required
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Due Date</label>
+              <input 
+                name="date" 
+                type="date" 
+                defaultValue={new Date().toISOString().split("T")[0]} 
+                required
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 py-3.5 px-4 text-sm font-bold text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button 
+                type="button" 
+                onClick={() => setIsAddBillOpen(false)}
+                className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                disabled={isSubmittingBill}
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-all disabled:opacity-70 cursor-pointer"
+              >
+                {isSubmittingBill ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Bill"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
