@@ -29,7 +29,6 @@ export default function AccountsPage() {
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
   
   // --- Modal State ---
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -99,7 +98,7 @@ export default function AccountsPage() {
   };
 
   const { totalAssets, totalLiabilities, netWorth } = useMemo(() => {
-    const assets = accounts.filter((a) => a.balance > 0).reduce((acc, curr) => acc + curr.balance, 0);
+    const assets = accounts.filter((a) => a.balance >= 0).reduce((acc, curr) => acc + curr.balance, 0);
     const liabilities = accounts.filter((a) => a.balance < 0).reduce((acc, curr) => acc + Math.abs(curr.balance), 0);
     return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities };
   }, [accounts]);
@@ -109,14 +108,91 @@ export default function AccountsPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-950">Linked Accounts</h1>
+          <p className="text-sm text-slate-500 mt-1.5">Manage your connected banks, wallets, and assets.</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg cursor-pointer">
+          <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg cursor-pointer hover:bg-cyan-500 transition-all">
             <Plus className="h-4 w-4" /> Add Account
           </button>
         </div>
       </header>
+
+      {/* --- Net Worth & Summary Metric Bar --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Net Worth</p>
+          <h3 className="text-3xl font-black text-slate-900 mt-2">
+            ₦{netWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </h3>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Assets</p>
+          <h3 className="text-3xl font-black text-emerald-600 mt-2">
+            ₦{totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </h3>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Liabilities</p>
+          <h3 className="text-3xl font-black text-rose-600 mt-2">
+            ₦{totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </h3>
+        </div>
+      </div>
+
+      {/* --- Accounts Grid List --- */}
+      {isLoading ? (
+        <div className="py-20 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-600" />
+        </div>
+      ) : accounts.length === 0 ? (
+        <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+          <Wallet className="h-12 w-12 mx-auto text-slate-300 mb-3" />
+          <h3 className="text-lg font-bold text-slate-800">No accounts connected yet</h3>
+          <p className="text-xs text-slate-500 mt-1 mb-6">Link your bank accounts or wallets to monitor balances in real-time.</p>
+          <button onClick={() => setIsAddModalOpen(true)} className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 cursor-pointer">
+            <Plus className="h-4 w-4" /> Connect First Account
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {accounts.map((acc) => {
+            const Icon = getIconForType(acc.type);
+            return (
+              <div key={acc.id} className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${acc.iconBg || 'bg-blue-100 text-blue-600'}`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteAccount(acc.id, acc.name)}
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                      title="Delete Account"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900">{acc.name}</h3>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">{acc.bank} • {acc.number}</p>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-slate-100 flex items-baseline justify-between">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Balance</span>
+                    <span className={`text-2xl font-black ${acc.balance < 0 ? 'text-rose-600' : 'text-slate-900'}`}>
+                      ₦{acc.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                    {acc.type}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ========================================== */}
       {/* ADD ACCOUNT MODAL OVERLAY */}
@@ -129,7 +205,7 @@ export default function AccountsPage() {
                 <h2 className="text-xl font-bold text-slate-900">Connect New Account</h2>
                 <p className="text-xs text-slate-500 mt-0.5">Add your bank or wallet to sync balances.</p>
               </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-2 rounded-xl text-slate-400 hover:bg-slate-100">
+              <button onClick={() => setIsAddModalOpen(false)} className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -152,6 +228,7 @@ export default function AccountsPage() {
                     <option value="Checking">Checking / Current</option>
                     <option value="Savings">Savings</option>
                     <option value="Credit">Credit Card</option>
+                    <option value="Investment">Investment</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
@@ -166,8 +243,8 @@ export default function AccountsPage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-cyan-500 disabled:opacity-70">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-cyan-500 disabled:opacity-70 cursor-pointer">
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Link Account"}
                 </button>
               </div>
