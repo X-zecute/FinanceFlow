@@ -1,13 +1,12 @@
-// app/auth/page.tsx
 import Link from "next/link";
-import { signIn } from "@/auth"; 
-import { 
-  PiggyBank, 
-  ArrowLeft, 
+import { signIn } from "@/auth";
+import {
+  PiggyBank,
+  ArrowLeft,
   Mail,
-  Lock, 
-  User, 
-  ArrowRight
+  Lock,
+  User,
+  ArrowRight,
 } from "lucide-react";
 
 export default function AuthPage({
@@ -19,8 +18,28 @@ export default function AuthPage({
 
   async function handleCredentials(formData: FormData) {
     "use server";
-    // NOTE: Credentials logic goes here
-    // await signIn("credentials", formData);
+    
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    if (mode === "signup") {
+      const firstName = formData.get("firstName") as string;
+      const lastName = formData.get("lastName") as string;
+      
+      // TODO: Register user in your database here if not handled inside your NextAuth Credentials provider
+    }
+
+    try {
+      // Trigger NextAuth credentials sign-in
+      await signIn("credentials", {
+        email,
+        password,
+        redirectTo: "/dashboard",
+      });
+    } catch (error) {
+      // NextAuth throws a redirect error on success, which must be re-thrown
+      throw error;
+    }
   }
 
   return (
